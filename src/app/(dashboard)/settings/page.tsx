@@ -3,6 +3,7 @@ import { can } from "@/lib/permissions";
 import { Settings, User, Building, ShieldCheck, Bell, CalendarCog } from "lucide-react";
 import { DailyLeadGenerator } from "@/components/settings/daily-lead-generator";
 import { getDailyLeadGenerationStatus } from "@/actions/lead-generation";
+import { ResetSystemDataButton } from "@/components/settings/reset-system-data";
 
 export default async function SettingsPage() {
   const user = await requireAuth();
@@ -28,6 +29,8 @@ export default async function SettingsPage() {
           Manage your account profile, daily automation, and organization settings.
         </p>
       </div>
+
+      <ResetSystemDataButton variant="card" />
 
       {isAdmin && generatorStatus && (
         <div>

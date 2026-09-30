@@ -412,20 +412,20 @@ export function DealsKanbanClient({ initialDeals }: { initialDeals: Deal[] }) {
                       <h4 className="text-sm font-semibold text-slate-100 group-hover:text-violet-300 transition-colors">
                         {deal.name}
                       </h4>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           onClick={() => setModal({ open: true, deal })}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-indigo-400 transition-opacity"
+                          className="p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-slate-800/80 rounded-lg transition-colors cursor-pointer"
                           title="Edit Deal"
                         >
-                          <Pencil className="w-3.5 h-3.5" />
+                          <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteDeal(deal.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition-opacity"
+                          className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Deal"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

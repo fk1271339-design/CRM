@@ -15,6 +15,8 @@ import Link from "next/link";
 import { AutoRefresh } from "@/components/shared/auto-refresh";
 import { formatCurrency, formatDate } from "@/lib/format";
 
+import { ResetSystemDataButton } from "@/components/settings/reset-system-data";
+
 function daysWaiting(createdAt: Date | string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
   const days = Math.floor(diff / (24 * 60 * 60 * 1000));
@@ -72,6 +74,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <ResetSystemDataButton variant="compact" />
           <Link
             href="/leads"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
