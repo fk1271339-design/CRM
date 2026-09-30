@@ -1,0 +1,246 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("SALESPERSON") // ADMIN | SALES_MANAGER | SALESPERSON
+  avatar       String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leadsAssigned Lead[]         @relation("AssignedLeads")
+  dealsAssigned Deal[]         @relation("AssignedDeals")
+  tasksAssigned Task[]         @relation("AssignedTasks")
+  activities    Activity[]
+  notes         Note[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model Company {
+  id        String    @id @default(cuid())
+  name      String
+  website   String?
+  industry  String?
+  phone     String?
+  email     String?
+  address   String?
+  ownerId   String?
+  contacts  Contact[]
+  deals     Deal[]
+  notes     Note[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([name])
+}
+
+model Lead {
+  id              String    @id @default(cuid())
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  companyName     String?
+  jobTitle        String?
+  description     String?   // Lead requirement / enquiry text
+  source          String
+  status          String    @default("NEW") // NEW | CONTACTED | QUALIFIED | UNQUALIFIED | CONVERTED | LOST
+  priority        String    @default("MEDIUM") // LOW | MEDIUM | HIGH
+  estimatedValue  Float?    @default(0)
+  assignedUserId  String?
+  assignedUser    User?     @relation("AssignedLeads", fields: [assignedUserId], references: [id])
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  activities Activity[]
+  notes      Note[]
+  tasks      Task[]
+  deals      Deal[]
+
+  @@index([status])
+  @@index([assignedUserId])
+  @@index([source])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  jobTitle  String?
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  ownerId   String?
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deals      Deal[]
+  activities Activity[]
+  notes      Note[]
+  tasks      Task[]
+}
+
+model Deal {
+  id                String    @id @default(cuid())
+  name              String
+  leadId            String?
+  lead              Lead?     @relation(fields: [leadId], references: [id])
+  companyId         String?
+  company           Company?  @relation(fields: [companyId], references: [id])
+  contactId         String?
+  contact           Contact?  @relation(fields: [contactId], references: [id])
+  value             Float     @default(0)
+  probability       Int       @default(10)
+  stage             String    @default("NEW") // NEW | CONTACTED | QUALIFIED | MEETING | PROPOSAL_SENT | NEGOTIATION | WON | LOST
+  lostReason        String?
+  expectedCloseDate DateTime?
+  assignedUserId    String?
+  assignedUser      User?     @relation("AssignedDeals", fields: [assignedUserId], references: [id])
+  source            String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  activities Activity[]
+  notes      Note[]
+  tasks      Task[]
+
+  @@index([stage])
+  @@index([leadId])
+}
+
+model Task {
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  dueDate        DateTime?
+  priority       String    @default("MEDIUM") // LOW | MEDIUM | HIGH
+  status         String    @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED | CANCELLED
+  assignedUserId String?
+  assignedUser   User?     @relation("AssignedTasks", fields: [assignedUserId], references: [id])
+
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  dealId    String?
+  deal      Deal?    @relation(fields: [dealId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // CALL | EMAIL | MEETING | NOTE | WHATSAPP | STATUS_CHANGE | TASK_COMPLETED
+  title       String   @default("Activity")
+  description String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  dealId    String?
+  deal      Deal?    @relation(fields: [dealId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Note {
+  id      String @id @default(cuid())
+  content String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  dealId    String?
+  deal      Deal?    @relation(fields: [dealId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  leadId     String?
+  dealId     String?
+  contactId  String?
+  uploadedBy String
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+model AutomationRule {
+  id          String   @id @default(cuid())
+  name        String
+  triggerType String
+  conditions  String?
+  actions     String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model DailyLeadGeneration {
+  id         String   @id @default(cuid())
+  date       String   @unique // YYYY-MM-DD — one batch per calendar day
+  count      Int      @default(0)
+  status     String   @default("COMPLETED") // COMPLETED | PARTIAL | FAILED
+  source     String   @default("AUTOMATIC") // AUTOMATIC | MANUAL
+  executedAt DateTime @default(now())
+  detail     String?
+}
