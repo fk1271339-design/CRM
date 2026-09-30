@@ -20,7 +20,7 @@ export default async function DashboardLayout({
             <h1 className="text-lg font-semibold text-white">
               Welcome back, {user.name.split(" ")[0]}
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500" suppressHydrationWarning>
               {new Date().toLocaleDateString("en-IN", {
                 weekday: "long",
                 year: "numeric",
